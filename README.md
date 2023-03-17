@@ -35,3 +35,14 @@ and each of the R values is a recall that could take values between 0 and 1. So,
   * W2vec model for carts and orders
   * Calculations for clicks
   * Calculations for buys
+* generating candidates
+  * Generate candidates clicks
+  * Generate candidates carts
+  * Generate candidates orders
+* engineering features
+  * Feature engineering for clicks model
+  * Feature engineering for carts model
+  * Feature engineering for orders model
+* training and predicting
+  * 
+
