@@ -21,5 +21,17 @@ score = 0.1*R<sub>clicks</sub> + 0.3*R<sub>carts</sub> + 0.6*R<sub>orders</sub>,
 and each of the R values is a recall that could take values between 0 and 1. So, the coefficients are set in a way that makes predicting orders more important than predicting carts, and predicting carts more important than predicting clicks.
 
 ## All project notebooks
+* notebooks with common code
+  * OTTO common
+  * OTTO common feature engineering
 * creating a cross-validation dataset
   * Prepare cross-validation
+* calculations aside of the main pipeline
+  * "Regular" co-visitation click2click matrix
+  * "Experimental" co-visitation click2click matrix
+  * Click2buy and buy2buy co-visitation matrixes
+  * Click2buy short co-visitation matrix
+  * W2vec model for clicks
+  * W2vec model for carts and orders
+  * Calculations for clicks
+  * Calculations for buys
