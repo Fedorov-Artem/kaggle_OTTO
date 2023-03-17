@@ -6,7 +6,7 @@ From the beginning I have decided to use Jupyter notebooks ran on kaggle website
 
 The solution's pipeline include the following major stages:
 * creating a cross-validation dataset from the last week of known full sessions, similar to the test dataset;
-* calculated co-visitation matrixes, word2vec models and making some other side calculations aside of the main pipeline;
+* calculating co-visitation matrixes, word2vec models and making some other calculations aside of the main pipeline;
 * generating candidates;
 * engineering features;
 * training the GBDT re-ranking models on the cross-validation dataset and using those models to select most relevant candidates, generated for the test sessions;
@@ -15,4 +15,11 @@ Generating candidates, engineering features, training models and making final pr
 
 ## A closer look at input data and metric.
 Each session data in the inputs consists of a session ID and sequence of events, each event includes AID, a timestamp, and event type, which could be either click, cart or order. More than 90% of all events are clicks, most sessions are short and only include clicks. This means cart and order predictions for most short sessions does not matter, as only predictions for sessions with some actual carts or orders give points.
-Organizers have published the code, they have used to produce the test dataset. It actually cuts all the sessions that started before the test period and continue into test period. Then, it selects sessions that have started during test period and filters out sessions with aids not met in any of the session of the full period (short sessions, of course, are more likely to pass through that filter). After that unfiltered sessions are truncated at a random point, leaving at least one known and at least one unknown event. As an output we have a shortened file of full sessions, a cross-validation file of shortened sessions and a file with labels.
+Organizers have published the code they have used to produce the test dataset. It actually cuts all the sessions that started before the test period and continue into test period. Then, it selects sessions that have started during test period and filters out sessions with aids not met in any of the session of the full period (short sessions, of course, are more likely to pass through that filter). After that unfiltered sessions are truncated at a random point, leaving at least one known and at least one unknown event. As an output we have a shortened file of full sessions, a cross-validation file of truncated sessions and a file with labels.
+Here is the formula used to score the predictions:
+score = 0.1*R<sub>clicks</sub> + 0.3*R<sub>carts</sub> + 0.6*R<sub>orders</sub>,
+and each of the R values is a recall that could take values between 0 and 1. So, the coefficients are set in a way that makes predicting orders more important than predicting carts, and predicting carts more important than predicting clicks.
+
+## All project notebooks
+* creating a cross-validation dataset
+  * Prepare cross-validation
