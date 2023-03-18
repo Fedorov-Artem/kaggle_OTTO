@@ -25,16 +25,16 @@ and each of the R values is a recall that could take values between 0 and 1. So,
   * OTTO common
   * OTTO common feature engineering
 * creating a cross-validation dataset
-  * Prepare cross-validation
+  * Prepare cross-validation (otto-prepare-cv.ipynb)
 * calculations aside of the main pipeline
-  * "Regular" co-visitation click2click matrix
-  * "Experimental" co-visitation click2click matrix
-  * Click2buy and buy2buy co-visitation matrixes
-  * Click2buy short co-visitation matrix
-  * W2vec model for clicks
-  * W2vec model for carts and orders
-  * Calculations for clicks
-  * Calculations for buys
+  * "Regular" co-visitation click2click matrix (otto_click2click_regular.ipynb)
+  * "Experimental" co-visitation click2click matrix (otto-click2click-experiment.ipynb)
+  * Click2buy and buy2buy co-visitation matrixes (otto-click2buy-buy2buy.ipynb)
+  * Click2buy short co-visitation matrix (otto-click2buy-short.ipynb)
+  * W2vec model for clicks (otto-word2vec-clicks.ipynb)
+  * W2vec model for carts and orders (otto-word2vec-carts-orders.ipynb)
+  * Calculations for clicks (create-counts-for-clicks.ipynb)
+  * Calculations for buys (create-counts-buys.ipynb)
 * generating candidates
   * Generate candidates clicks
   * Generate candidates carts
