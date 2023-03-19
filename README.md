@@ -38,9 +38,9 @@ and each of the R values is a recall that could take values between 0 and 1. So,
   * Calculations for clicks (create-counts-for-clicks.ipynb)
   * Calculations for buys (create-counts-buys.ipynb)
 * generating candidates
-  * Generate candidates for clicks
-  * Generate candidates for carts
-  * Generate candidates for orders
+  * Generate candidates for clicks (otto-click-candidates-generation.ipynb)
+  * Generate candidates for carts (otto-generate-candidates-carts.ipynb)
+  * Generate candidates for orders (otto-generate-candidates-orders.ipynb)
 * engineering features
   * Feature engineering for clicks model
   * Feature engineering for carts model
@@ -68,7 +68,7 @@ In the same notebook I also converted all the data, including inputs and cross-v
 
 Now with cross-validation datasets ready it is possible to get additional insights on the test dataset and on the answers I am going to predict.
 Number of full sessions in history has reduced to 10.6 mln, and the cross-validation datasets have 1.8 mln truncated sessions. 
-We can see that for the vast majority of sessions do not have any labels neither for carts nor for orders, while almost all sessions have a click label. This means, cart and order predictions for most short sessions does not matter, as only predictions for sessions with some actual carts or orders give points. Almost all the sessions do have a single ground truth value for clicks, while very few have no ground truth values.
+Out of that number only about 300,000 sessions or 17% have at least one aid carted and about half of than number, about 150,000 sessions or 8% have at least one aid ordered. The vast majority of sessions do not have any labels neither for carts nor for orders. This means, cart and order predictions for most short sessions does not matter, as only predictions for sessions with some actual carts or orders give points. At the same time, almost all the sessions do have a single ground truth value for clicks, while very few have no ground truth values.
 
 ## Calculations aside of the main pipeline
 These notebooks include notebooks calculating the co-visitaion matrixes, w2vec models and all the other calculations combined into 2 notebooks "create counts for clicks" and "create counts for buys" (buys means any non-click event, i.e. either cart or click). All the calculations in those notebooks are repeated at least twice: once for the cross-validation dataset and then for the full data, in a few cases the calculations need to be made separately for each cross-validation dataset.
@@ -80,3 +80,12 @@ Here is the full list of co-visitation matrixes, used to produce the final resul
 * **"Experimental" co-visitation click2click matrix** (otto-click2click-experiment.ipynb) counts two events of any type in a session, if time difference between them is less than 5 minutes and there are no more than 20 events between them. Weight coefficient is calculated in a way that makes later events to have higher weights. The ordering of events does count for this matrix, this means that aid_y is only counted if it comes after aid_x. I tried to use this matrix to generate click candidates, but "regular" matrix showed better result. In the final pipeline this matrix is used to calculate a feature (wgt_exp) for the clicks model.
 * **Click2buy co-visitation matrix** (otto-click2buy-buy2buy.ipynb) counts events in a session, if the later event is a buy (either cart or order) and time difference between them is less than 10 hours. The weight value is calculated in a way that makes pairs of events with smaller time difference more important. This matrix is used both for carts and orders candidate generation and to calculate 2 features (wgt_c2buy_full and wgt_c2buy_6_from_full) for carts and orders models.
 * **Buy2buy co-visitation matrix** (otto-click2buy-buy2buy.ipynb) counts events in a session, if both of them are buys and time difference between them is less than 5 days. The weight value is always equal to, so each pair of events is equally important. This matrix is used to calculate a feature (wgt_buy2buy) for carts and orders models.
+* **Click2buy short co-visitation matrix** (otto-click2buy-short.ipynb) counts events in a session, if the later event is a buy (either cart or order) and time difference between them is less than 2 hours. The weight value is calculated in a way that makes pairs of events with smaller time difference more important. Comparing to previously mentioned click2buy co-visitation matrix, in this one time difference is limited to much shorter time and the weight value declines much faster as time between the events increases. This matrix is used to build a feature (wgt_c2buy_short) for carts and orders models.
+* **Exact next click-to-click co-visitation matrix** (create-counts-for-clicks.ipynb) counts only exact next, regardless of their type or of time passed between them. This is the fastest matrix to calculate, so it doesn't have a dedicated notebook, and is calculated in the same notebook with some other side calculations for the clicks model. This matrix is used to calculate two features for the clicks model: 'wgt_last' and 'wgt_before_last'.
+
+Notebooks with w2vec model generation both are very short in terms of number of rows with code. Information about event type and event time is removed, so, the sequence of aids is the only information kept. That information is passed to a standard function that trains the w2vec model. But these notebooks take significant time to run: it takes about 3 hours to train models for cross-validation and test datasets, using first 3 weeks of full sessions or all the known full sessions correspondingly.
+
+I had an intuition, that a w2vec model with a longer window would be more usefull for carts and orders models, while model with shorter window would produce better results for the clicks model. I've made the checks during the competition, trying both w2vec models to produce features for each of GBDT models and confirmed that this is true. So, I kept using two different w2vec models trained with slightly different parameters. However, difference in performance between the two w2vec models was relatively small, so I choose not to make any additional experiments with changing the models' parameters and tried some other ideas instead.
+
+Here is the list of side calculations made in "Calculations for clicks" and "Calculations for buys" notebooks.
+
