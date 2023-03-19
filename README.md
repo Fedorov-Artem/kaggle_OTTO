@@ -87,5 +87,21 @@ Notebooks with w2vec model generation both are very short in terms of number of 
 
 I had an intuition, that a w2vec model with a longer window would be more usefull for carts and orders models, while model with shorter window would produce better results for the clicks model. I've made the checks during the competition, trying both w2vec models to produce features for each of GBDT models and confirmed that this is true. So, I kept using two different w2vec models trained with slightly different parameters. However, difference in performance between the two w2vec models was relatively small, so I choose not to make any additional experiments with changing the models' parameters and tried some other ideas instead.
 
-Here is the list of side calculations made in "Calculations for clicks" and "Calculations for buys" notebooks.
+List of side calculations made in "Calculations for buys" notebook:
+* conversion rate - means conversion from click to either cart or order;
+* conversion to carts - conversion from either clicks, previously carted aids or previously ordered aids to carts;
+* conversion to orders - conversion from either clicks, carts or previously ordered aids to new orders;
+* average per aid clicks before buy;
+* daily total carts/orders per aid;
+* average w2vec similarity between the last one aid in session and 5 aids before it.
 
+List of side calculations made in "Calculations for clicks" notebook:
+* median time users view aid;
+* average per day clicks per aid;
+* return rate, counting how often users return for a new click or other actions with the same aid;
+* exact next click-to-click co-visitation matrix, that has been already mentioned earlier.
+
+## Generating candidates
+The generation of candidates is rules-based for the clicks, carts and orders. I've spent significant time trying to improve candidate generation process, probably put too much effort in it. For all the candidate generations I generally use three sources of candidates: session history aids, co-visitaion matrixes and daily most popular aids. Depending on number of candidates I use different hand-picked coefficients that define how many candidates come from each source. I've started with using 50 candidates for all the three models, then moved to 75 candidates both for carts and orders. I've planned to start using 75 candidates also for the clicks model. But clicks model has the lowest coefficients in the competition metric, but at the same time it is the most demanding model in terms of memory usage. So I kept using only 50 candidates for the clicks model.
+
+For clicks model I use the lowest number of aids from session history, as the model is aimed at guessing the exact next aid clicked, so aids clicked some time ago are  usually less relevant. So, in case of generating candidates for clicks I take latest aids from session history, then add aids suggested in the co-visitation matrix for the exact last aid, then add to the list most common aids suggested by the co-visitation matrix for a few last aids in session history. Then I remove duplicates from the list and cut it to get the desired number of candidates. If after removing all the duplicates there are less aids in the list then the desired number of candidates, then I one by one add aids from daily top of most popular aids (after checking for each one that it not in the list already). For 20 click candidates generation my best result was 52.68% percent guessed, while for 50 candidates it was 60.43%.
