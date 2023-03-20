@@ -105,3 +105,46 @@ List of side calculations made in "Calculations for clicks" notebook:
 The generation of candidates is rules-based for the clicks, carts and orders. I've spent significant time trying to improve candidate generation process, probably put too much effort in it. For all the candidate generations I generally use three sources of candidates: session history aids, co-visitaion matrixes and daily most popular aids. Depending on number of candidates I use different hand-picked coefficients that define how many candidates come from each source. I've started with using 50 candidates for all the three models, then moved to 75 candidates both for carts and orders. I've planned to start using 75 candidates also for the clicks model. But clicks model has the lowest coefficients in the competition metric, but at the same time it is the most demanding model in terms of memory usage. So I kept using only 50 candidates for the clicks model.
 
 For clicks model I use the lowest number of aids from session history, as the model is aimed at guessing the exact next aid clicked, so aids clicked some time ago are  usually less relevant. So, in case of generating candidates for clicks I take latest aids from session history, then add aids suggested in the co-visitation matrix for the exact last aid, then add to the list most common aids suggested by the co-visitation matrix for a few last aids in session history. Then I remove duplicates from the list and cut it to get the desired number of candidates. If after removing all the duplicates there are less aids in the list then the desired number of candidates, then I one by one add aids from daily top of most popular aids (after checking for each one that it not in the list already). For 20 click candidates my best result was 52.68% percent guessed, while for 50 candidates it was 60.43%.
+
+For cart and order candidates I also take latest aids from session history, first latest buys, then all the latest aids, then add most common aids suggested in the co-visitation matrix for last buys, then add to the list most common aids suggested by the co-visitation matrix for any last aid in the session history. All the constants, like number of buys to take from session history, number of aids from session history, maximum number of aids, suggested from buys e.t.c. vary for carts/orders and depending on number of candidates, but the logic is mostly the same. Then, like when generating candidates for clicks, I remove duplicates from the list and cut it to get the desired number of candidates. If after removing all the duplicates there are less aids in the list then the desired number of candidates, then I one by one add aids from daily top of most popular aids (after checking for each one that it not in the list already). For 20 cart candidates my best result was 40.68% percent guessed, while for 75 candidates it was 47.12%. For orders, best result for 20 candidates was 64.84%, while for 75 candidates it was 68.95%.
+
+We can see, that percent of guessed orders is much higher, than percent of guessed carts. This is mostly because all the carted aids have a very high chance to be ordered, i.e. you make an obvious move - suggest all previously carted aids are going to be ordered, and get a good percent of guessed items. But it is harder to guess carts, as recently viewed aids have a much lower chance to be added to cart.
+
+## Feature engineering.
+The three feature engineering notebooks take time to run and were the longest notebooks in terms of lines of code. I had to move some calculations to "Calculations for clicks" and "Calculations for buys" notebooks, and also moved definitions of functions, common to several feature engineering notebooks, to a dedicated notebook "OTTO common feature engineering". To further speed up the notebooks, I had to rewrite some code using polars library instead of pandas. All of this made the notebooks managable in terms of run time and complexity.
+
+As many features are common between the notebooks, I will now provide a single list for all of the features used at least in a single model.
+* Session history features (value is equal to some constant if candidate aid is not present in the session):
+  * **n** - 0 for the last viewed aid, 1 for aid last viewed before, e.t.c, 125 for aids never viewed;
+  * **time_delta** - time in seconds from a moment when aid was last viewed to the last action in session;
+  * **type_last** - 0 if no buys for the aid in the session, 1 if the last buy is a cart, 2 if the last buy is an order;
+  * **count_views** - number of interactions with aid in the session;
+  * **time_viewed** - time from user's click on candidate aid until next event, clipped to 180 seconds and then summed for all interactions with the aid.
+* Other session features (features, that only depend on session):
+  * **ts_diff** - time in seconds between last event and event before last;
+  * **session_time** - time in seconds from first to last event in the session (used in carts and orders models only);
+  * **events_last_3hours** - total number of events last 3 hours of session (used in carts and orders models only);
+  * **buys_this_session** - total number of cart/order events in session (used in carts and orders models only);
+  * **history_mean** - w2vec mean similarity between last aid and previous 4 aid before that (used in carts and orders models only);
+  * **buys_in_session** - 0 if no buys, 1 if only carts, 2 if at least 1 order is present in session (used in orders model only).
+* Global per aid average counts:
+  * **daily_aid_count** - normalized count of events with aid for the previous day;
+  * **same_day_aid_count** - normalized count of events with aid for the day;
+  * **aid_count_weekly** - normalized count of events/carts/orders with aid for the week;
+  * **aid_counts** - total interactions with candidate aid in full sessions (used in clicks model only);
+  * **aid_counts_buys** - total buys for candidate aid in full sessions (used in orders model only);
+  * **aid_counts_orders**, **aid_counts_carts** - total orders/carts for candidate aid in full sessions;
+  * **conv** - simple conversion rate, number of sessions with aid buied divided by total number of sessions with any event with aid (used in carts model only);
+  * **total_2order_conv**, **total_2cart_conv** - feature depending on type_last feature. If aid was has no buys, here is conversion rate from views to orders, else - conversion rate from carts to orders or from orders to orders. Similar feature was constructed for carts, with click2cart, cart2cart and order2cart conversion rates (used in carts and orders models only);
+  * **clicks_before_buy** - how many times on average item is clicked before first buy (used in carts and orders models only);
+  * **time_viewed_clipped** - for how long on average aid is viewed before first buy, before averaging values clipped to 180. This feature has low importance and I thought about removing it, but experiment showed results go a bit down in that case.
+* Features built using co-visitation matrixes for clicks model:
+  * **wgt_matrix** - sum of co-visitaion matrix weights for the last 5 aids, using "regular" co-visitation click2click matrix (same co-visitaion matrix that was used for candidate generation);
+  * **wgt_exp** - sum of co-visitaion matrix weights for the last 10 aids normalized by n (divided weight by 1 for the last aid, by 2 for aid before it, then by 3 and so on), using "experimental" co-visitation click2click matrix;
+  * **wgt_last** - exact next click-to-click co-visitation matrix values for the last aid session;
+  * **wgt_before_last** - exact next click-to-click co-visitation matrix values for the last aid session.
+* Features built using co-visitation matrixes for carts and orders models:
+  * **wgt_buy2buy** - co-visitation buy2order/buy2cart matrix feature
+  * **wgt_c2buy_short** - co-visitation click2buy matrix feature (matrix counts only cases when there is 1 hour or less between click and buy event)
+  * **wgt_c2buy_full** - co-visitation click2buy matrix feature for 30 last aids (if they are within 3 hours from last event)
+  * **wgt_c2buy_6_from_full** - sum of co-visitaion matrix weights for the last 5 aids, using "regular" co-visitation click2click matrix.
