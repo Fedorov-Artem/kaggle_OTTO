@@ -18,7 +18,7 @@ Each session data in the inputs consists of a session ID and sequence of events,
 
 For every session in the test dataset, competitors predict 20 clicks, 20 carts and 20 orders. Here is the formula used to score the predictions:
 
-score = 0.1*R<sub>clicks</sub> + 0.3*R<sub>carts</sub> + 0.6*R<sub>orders</sub>,
+score = 0.1*R<sub>clicks</sub> + 0.3*R<sub>carts</sub> + 0.6*R<sub>orders</sub> ,
 
 and each of the R values is a recall that could take values between 0 and 1. So, the coefficients are set in a way that makes predicting orders more important than predicting carts, and predicting carts more important than predicting clicks.
 
@@ -113,7 +113,9 @@ We can see, that percent of guessed orders is much higher, than percent of guess
 ## Feature engineering.
 The three feature engineering notebooks take time to run and were the longest notebooks in terms of lines of code. I had to move some calculations to "Calculations for clicks" and "Calculations for buys" notebooks, and also moved definitions of functions, common to several feature engineering notebooks, to a dedicated notebook "OTTO common feature engineering". To further speed up the notebooks, I had to rewrite some code using polars library instead of pandas. All of this made the notebooks managable in terms of run time and complexity.
 
-As many features are common between the notebooks, I will now provide features used at least in one of models in a single list.
+Notebooks that calculate the w2vec features take even more time to run, than the notebooks that calculate all the other features combined. So, I decided to split the notebook into two notebooks, each processing its chunk of test data. Already after the competition I tried several improvements that increased feature calculation speed, but even with that improvement it takes more than 3 hours to calculate the w2vec features for each chunk of the test data.
+
+As many features are common between the notebooks, I will now provide features used at least in one of the models in a single list.
 * Session history features (value is equal to some constant if candidate aid is not present in the session):
   * **n** - 0 for the last viewed aid, 1 for aid last viewed before, e.t.c, 125 for aids never viewed;
   * **time_delta** - time in seconds from a moment when aid was last viewed to the last action in session;
@@ -141,8 +143,8 @@ As many features are common between the notebooks, I will now provide features u
 * Features built using co-visitation matrixes and w2vec for clicks model:
   * **wgt_matrix** - sum of co-visitaion matrix weights for the last 5 aids, using "regular" co-visitation click2click matrix (same co-visitaion matrix that was used for candidate generation);
   * **wgt_exp** - sum of co-visitaion matrix weights for the last 10 aids normalized by n (divided weight by 1 for the last aid, by 2 for aid before it, then by 3 and so on), using "experimental" co-visitation click2click matrix;
-  * **wgt_last** - exact next click-to-click co-visitation matrix values for the last aid session;
-  * **wgt_before_last** - exact next click-to-click co-visitation matrix values for the last aid session;
+  * **wgt_last** - exact next click-to-click co-visitation matrix values for the last aid in the session;
+  * **wgt_before_last** - exact next click-to-click co-visitation matrix values for the last aid in the session;
   * **similarity_first** - w2vec similarity between candidate and last aid;
   * **similarity_second** - w2vec similarity between candidate and aid before last.
 * Features built using co-visitation matrixes and w2vec for carts and orders models:
@@ -154,3 +156,5 @@ As many features are common between the notebooks, I will now provide features u
   * **w2v_20_min** - minimal w2vec similarity between candidate and last 20 aids (3 hours from last event);
   * **w2v_5_max** - maximal w2vec similarity between candidate and last 5 aids;
   * **w2v_5_min** - minimal w2vec similarity between candidate and last 5 aids (this feature also has low importance, but its removal decreased result a bit).
+
+## Training the GBDT models and predicting
