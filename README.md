@@ -113,7 +113,7 @@ We can see, that percent of guessed orders is much higher, than percent of guess
 ## Feature engineering.
 The three feature engineering notebooks take time to run and were the longest notebooks in terms of lines of code. I had to move some calculations to "Calculations for clicks" and "Calculations for buys" notebooks, and also moved definitions of functions, common to several feature engineering notebooks, to a dedicated notebook "OTTO common feature engineering". To further speed up the notebooks, I had to rewrite some code using polars library instead of pandas. All of this made the notebooks managable in terms of run time and complexity.
 
-As many features are common between the notebooks, I will now provide a single list for all of the features used at least in a single model.
+As many features are common between the notebooks, I will now provide features used at least in one of models in a single list.
 * Session history features (value is equal to some constant if candidate aid is not present in the session):
   * **n** - 0 for the last viewed aid, 1 for aid last viewed before, e.t.c, 125 for aids never viewed;
   * **time_delta** - time in seconds from a moment when aid was last viewed to the last action in session;
@@ -136,15 +136,21 @@ As many features are common between the notebooks, I will now provide a single l
   * **aid_counts_orders**, **aid_counts_carts** - total orders/carts for candidate aid in full sessions;
   * **conv** - simple conversion rate, number of sessions with aid buied divided by total number of sessions with any event with aid (used in carts model only);
   * **total_2order_conv**, **total_2cart_conv** - feature depending on type_last feature. If aid was has no buys, here is conversion rate from views to orders, else - conversion rate from carts to orders or from orders to orders. Similar feature was constructed for carts, with click2cart, cart2cart and order2cart conversion rates (used in carts and orders models only);
-  * **clicks_before_buy** - how many times on average item is clicked before first buy (used in carts and orders models only);
+  * **clicks_before_buy** - how many times on average aid is clicked before first buy (used in carts and orders models only);
   * **time_viewed_clipped** - for how long on average aid is viewed before first buy, before averaging values clipped to 180. This feature has low importance and I thought about removing it, but experiment showed results go a bit down in that case.
-* Features built using co-visitation matrixes for clicks model:
+* Features built using co-visitation matrixes and w2vec for clicks model:
   * **wgt_matrix** - sum of co-visitaion matrix weights for the last 5 aids, using "regular" co-visitation click2click matrix (same co-visitaion matrix that was used for candidate generation);
   * **wgt_exp** - sum of co-visitaion matrix weights for the last 10 aids normalized by n (divided weight by 1 for the last aid, by 2 for aid before it, then by 3 and so on), using "experimental" co-visitation click2click matrix;
   * **wgt_last** - exact next click-to-click co-visitation matrix values for the last aid session;
-  * **wgt_before_last** - exact next click-to-click co-visitation matrix values for the last aid session.
-* Features built using co-visitation matrixes for carts and orders models:
-  * **wgt_buy2buy** - co-visitation buy2order/buy2cart matrix feature
-  * **wgt_c2buy_short** - co-visitation click2buy matrix feature (matrix counts only cases when there is 1 hour or less between click and buy event)
-  * **wgt_c2buy_full** - co-visitation click2buy matrix feature for 30 last aids (if they are within 3 hours from last event)
-  * **wgt_c2buy_6_from_full** - sum of co-visitaion matrix weights for the last 5 aids, using "regular" co-visitation click2click matrix.
+  * **wgt_before_last** - exact next click-to-click co-visitation matrix values for the last aid session;
+  * **similarity_first** - w2vec similarity between candidate and last aid;
+  * **similarity_second** - w2vec similarity between candidate and aid before last.
+* Features built using co-visitation matrixes and w2vec for carts and orders models:
+  * **wgt_buy2buy** - co-visitation buy2order/buy2cart matrix feature;
+  * **wgt_c2buy_short** - co-visitation click2buy matrix feature (matrix counts only cases when there is 1 hour or less between click and buy event);
+  * **wgt_c2buy_full** - co-visitation click2buy matrix feature for 30 last aids (if they are within 3 hours from the last event);
+  * **wgt_c2buy_6_from_full** - sum of co-visitaion matrix weights for the last 5 aids, using "regular" co-visitation click2click matrix;
+  * **w2v_20_mean** - average w2vec similarity between candidate and last 20 aids (3 hours from last event);
+  * **w2v_20_min** - minimal w2vec similarity between candidate and last 20 aids (3 hours from last event);
+  * **w2v_5_max** - maximal w2vec similarity between candidate and last 5 aids;
+  * **w2v_5_min** - minimal w2vec similarity between candidate and last 5 aids (this feature also has low importance, but its removal decreased result a bit).
