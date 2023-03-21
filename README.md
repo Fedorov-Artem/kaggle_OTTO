@@ -1,28 +1,29 @@
 # kaggle_OTTO
 ## Task and solution overview.
-This is the code for kaggle competition called "OTTO – Multi-Objective Recommender System". OTTO is Germany's largest online retailer. The task is to predict, which exact next item user is going to click next and which items user is going to add to cart or order before the end of the test period. The competition data is real life new users' sessions on OTTO website. The test dataset includes one week of users' sessions, truncated at a random point. Organizers also provide participants with history of full user's sessions for four weeks, preceding the test period. But no metainformation is available for all the items, that show up in both datasets. Participants only have item ID's, that are called AIDs, and there are about 1.8 mln AIDs showing up in the competition data, including both full and truncated user sessions.
+This is the code for kaggle competition called "OTTO – Multi-Objective Recommender System". OTTO is Germany's largest online retailer. The task is to predict which exact next item user is going to click next and which items user is going to add to cart or order before the end of the test period. The competition data is real life new users' sessions on OTTO website. The test dataset includes one week of users' sessions, truncated at a random point. Organizers also provide participants with history of full user's sessions for four weeks, preceding the test period. But no metadata is available for all the items, that show up in both datasets. Participants only have item ID's, that are called AIDs, and there are about 1.8 mln AIDs showing up in the competition data, including both full and truncated user sessions.
 
 From the beginning I have decided to use Jupyter notebooks ran on kaggle website to produce the solution. However, this decision turned out to have a number of complications. Firstly, kaggle notebooks without GPU support at a time of competition had RAM limit of 30 Gb and I had to spend some time, for example, writing code that would merge two dataframes chunk by chunk, as using a simple merge would cause a memory error. Kaggle notebooks with GPU available have RAM limit of just 13 Gb, that made me choose between some features, instead of using all of them. Then, Jupyter notebooks are not that useful when dealing with projects that require a complicated data pipeline. Total number of notebooks used to produce the final solution is 28, and that number does not include a few more notebooks used to test some approaches that brought no fruit.
 
-The solution's pipeline includes following major stages:
+The solution's pipeline includes the following major stages:
 * creating a cross-validation dataset from the last week of known full sessions, similar to the test dataset;
 * calculating co-visitation matrixes, word2vec models and making some other calculations aside of the main pipeline;
 * generating candidates;
 * engineering features;
 * training the GBDT re-ranking models on the cross-validation dataset and using those models to select most relevant candidates, generated for the test sessions;
 * some final formatting and submitting the results.
-Generating candidates, engineering features, training models and making final prediction stages are separate for each prediction, i.e. for clicks, carts and orders. For each of these predictions, a dedicated model is being trained on a different dataset and for different candidates, although many features are actually common.
+Generating candidates, engineering features, training models and making final prediction stages have separate notebooks for clicks, carts and orders. For each of these predictions, a dedicated model is being trained, with different features, on a different dataset and for different candidates, although some features are actually common.
 
 ## A closer look at input data and metric.
 Each session data in the inputs consists of a session ID and sequence of events, each event includes AID, a timestamp, and event type, which could be either click, cart or order. There are total 12.9 mln full sessions, and a median full session has 6 events, while there are 1.7 mln truncated sessions in the test dataset and a median truncated session has just 2 events. More than 90% of all events are clicks, most sessions are short and only include clicks. 
 
 For every session in the test dataset, competitors predict 20 clicks, 20 carts and 20 orders. Here is the formula used to score the predictions:
 
-score = 0.1*R<sub>clicks</sub> + 0.3*R<sub>carts</sub> + 0.6*R<sub>orders</sub> ,
+score = 0.1*R<sub>clicks</sub> + 0.3*R<sub>carts</sub> + 0.6*R<sub>orders</sub> , 
 
 and each of the R values is a recall that could take values between 0 and 1. So, the coefficients are set in a way that makes predicting orders more important than predicting carts, and predicting carts more important than predicting clicks.
 
 ## All project notebooks
+Here is the full list of notebooks, used in the project pipeline:
 * notebooks with common code
   * OTTO common
   * OTTO common feature engineering
@@ -42,14 +43,14 @@ and each of the R values is a recall that could take values between 0 and 1. So,
   * Generate candidates for carts (otto-generate-candidates-carts.ipynb)
   * Generate candidates for orders (otto-generate-candidates-orders.ipynb)
 * engineering features
-  * Feature engineering for clicks model
-  * Feature engineering for carts model
-  * Feature engineering for orders model
-  * W2vec features for clicks
-  * W2vec features for carts
-  * W2vec features for carts (part_1)
-  * W2vec features for orders
-  * W2vec features for orders (part_1)
+  * Feature engineering for clicks model (otto-feature-engineering-clicks.ipynb)
+  * Feature engineering for carts model (otto-feature-engineering-carts.ipynb)
+  * Feature engineering for orders model (otto-feature-engineering-orders.ipynb)
+  * W2vec features for clicks (otto-clicks-w2vec.ipynb)
+  * W2vec features for carts (otto-carts-w2vec.ipynb)
+  * W2vec features for carts (part_1) (otto-carts-w2vec-part1.ipynb)
+  * W2vec features for orders (otto-orders-w2vec.ipynb)
+  * W2vec features for orders (part_1) (otto-orders-w2vec-part1.ipynb)
 * training and predicting
   * Clicks Model and Prediction
   * Carts Model
@@ -169,5 +170,10 @@ Close to competition's final days, I have increased number of candidates for car
 ## Final formatting and submitting the results
 Little can be said abouth this notebook. I wrote the code in a way that it was possible to upload results for a single model or results for all the three models, to track improvements for each model on leaderboard.
 
+## Summary and what could have been done better
+I started working on the project about a month after the competition was launched and still managed to get into top 3% participants, well in the middle of the silver zone. That should be considered to be a fairly good result. After the competition, I've read all the posts of top teams members and understood that all of them used servers with way more RAM and GPU available. I worked solo and lost a competition to people who mostly worked in teams and had way more computational resourse. If all the time I spent trying to fit all the data into available memory could be spent on running additional experiments, I would have been be able to produce a better result.
+
+Having said that, no doubt that even with the resourse available I could have done better. I had enough memory to add much more features for carts and orders models. I could have run more notebooks in parallel and tried even more features, more types of co-visitation matrixes, more versions of w2vec models. I could have improved my carts and orders models by using some features I've only used for clicks model. For example, I haven't even tried features built for exact last aid in session for carts and orders models, and I haven't tried features built with any of click2click models for carts/orders. Then, there were several bugs in code that also a bit decreased the result. Then, there were all sorts of original co-visitation matrixes used by top teams, like a matrix that only counts first few aids in session, a matrix that counts last week's results, matrixes that separately count events before/after 2 PM. If I had a bit more time to think, probably I could have come to some of this ideas. Probably one of my mistakes was always trying to add additional counts instead of thinking about additional types of co-visitation matrixes.
+
 ## March 2023 upload to github.
-In March 2023, about a month after the competition, I decided to rewiev the code, add some comments, delete commented unused code and upload the notebooks to github. At this point further improving recommendations was not my goal anymore. But while adding comments and reviewing the code I couldn't help making some changes. I fixed a few bugs, moved addidional fucntions to otto_common notebook, created a separate notebook with functions common to feature engineering, checked for ways to speed up the word2vec feature notebook, removed a few features that actually decreased model's performance, e.t.c. As a result not just the code became shorter
+In March 2023, about a month after the competition, I decided to review the code, add some comments, delete commented unused code and upload the notebooks to github. At this point further improving recommendations was not my goal anymore. But while adding comments and reviewing the code I couldn't help making some changes. I fixed a few bugs, moved addidional fucntions to otto_common notebook, created a separate notebook with functions common to feature engineering, checked for ways to speed up the word2vec feature notebook, removed a few features that actually decreased model's performance, e.t.c. As a result not just the code became shorter and clearer, but also the result have improved.
