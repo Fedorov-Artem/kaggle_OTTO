@@ -158,6 +158,42 @@ As many features are common between the notebooks, I will now provide features u
   * **w2v_5_max** - maximal w2vec similarity between candidate and last 5 aids;
   * **w2v_5_min** - minimal w2vec similarity between candidate and last 5 aids (this feature also has low importance, but its removal decreased result a bit).
 
+Importances of all the features for LGBM models (importance_type='gain').
+| Feature                | Clicks  | Carts   | Orders  |
+|------------------------|---------|---------|---------|
+| wgt_matrix             | 2.6e+05 | X       | X       |
+| wgt_exp                | 2.4e+06 | X       | X       |
+| n                      | 8.0e+06 | 5.2e+06 |         |
+| time_delta             | 8.8e+04 | 1.8e+05 |         |
+| count_views            | 5.6e+04 | 1.0e+04 |         |
+| ts_diff                | 1.2e+05 | 3.3e+04 |         |
+| time_viewed            | 1.3e+05 | 1.1e+05 |         |
+| daily_aid_count        | 4.1e+04 | 1.5e+04 |         |
+| same_day_aid_count     | 2.3e+05 | 6.5e+04 |         |
+| aid_count_weekly       | 2.5e+04 | 2.0e+04 |         |
+| wgt_last               | 2.3e+06 | X       | X       |
+| wgt_before_last        | 9.7e+04 | X       | X       |
+| time_viewed_clipped    | 2.9e+04 | 1.5e+04 |         |
+| aid_counts             | 2.2e+05 | 3.3e+04 |         |
+| type_last              | 4.7e+04 | 1.0e+04 |         |
+| similarity_first       | 1.6e+05 | X       | X       |
+| similarity_second      | 7.3e+04 | X       | X       |
+| wgt_buy2buy            | X       | 2.6e+04 |         |
+| wgt_c2buy_short        | X       | 1.2e+05 |         |
+| wgt_c2buy_full         | X       | 5.7e+05 |         |
+| wgt_c2buy_6_from_full  | X       | 5.2e+04 |         |
+| conv                   | X       | 1.6e+04 |         |
+| clicks_before_buy      | X       | 5.8e+04 |         |
+| session_time           | X       | 2.8e+04 |         |
+| events_last_3hours     | X       | 1.1e+05 |         |
+| history_mean           | X       | 3.9e+04 |         |
+| total_2cart/order_conv | X       | 2.0e+04 |         |
+| buys_this_session      | X       | 1.6e+04 |         |
+| w2v_20_mean            | X       | 3.0e+04 |         |
+| w2v_20_min             | X       | 1.8e+04 |         |
+| w2v_5_min              | X       | 1.2e+04 |         |
+| w2v_5_max              | X       | 4.6e+05 |         |
+
 ## Training the GBDT models and predicting
 Notebooks training the GBDT models are the only ones that use GPU. I tried both catboost and LGBM models, and LGBM showed better results. To produce the final prediction for clicks and carts only LGBM predictions are used, while for orders I've build two cross validation datasets and used one of them to train LGBM model, and another one - to train catboost model. Then I combined predictions made by two models, and found out that it mamkes a slightly better prediction than a single prediction made by LGBM model. I kept that pipeline with two models and two cross-validation datasets for orders, but decided against implementing a similar pipeline for carts.
 
