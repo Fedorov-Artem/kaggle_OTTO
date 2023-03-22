@@ -158,7 +158,7 @@ As many features are common between the notebooks, I will now provide features u
   * **w2v_5_max** - maximal w2vec similarity between candidate and last 5 aids;
   * **w2v_5_min** - minimal w2vec similarity between candidate and last 5 aids (this feature also has low importance, but its removal decreased result a bit).
 
-Importances of all the features for LGBM models (importance_type='gain').
+Avewrage importances per 4 folds of all the features for LGBM models (importance_type='gain').
 | Feature                | Clicks  | Carts   | Orders  |
 |------------------------|---------|---------|---------|
 | wgt_matrix             | 2.6e+05 | X       | X       |
