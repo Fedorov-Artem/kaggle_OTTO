@@ -25,8 +25,8 @@ and each of the R values is a recall that could take values between 0 and 1. So,
 ## All project notebooks
 Here is the full list of notebooks, used in the project pipeline:
 * notebooks with common code
-  * OTTO common
-  * OTTO common feature engineering
+  * OTTO common (otto-common.ipynb)
+  * OTTO common feature engineering (otto-common-fe.ipynb)
 * creating a cross-validation dataset
   * Prepare cross-validation (otto-prepare-cv.ipynb)
 * calculations aside of the main pipeline
@@ -53,23 +53,22 @@ Here is the full list of notebooks, used in the project pipeline:
   * W2vec features for orders (part_1) (otto-orders-w2vec-part1.ipynb)
 * training and predicting
   * Clicks Model and Prediction (otto-model-clicks.ipynb)
-  * Carts Model
-  * Orders Model
-  * Carts Prediction
-  * Making and combining predictions for orders
+  * Carts Model (otto-model-carts.ipynb)
+  * Orders Model (otto-model-orders.ipynb)
+  * Carts Prediction (otto-carts-prediction.ipynb)
+  * Making and combining predictions for orders (otto-orders-predict-combine.ipynb)
 * final formatting and submitting the results
-  * OTTO Upload
+  * OTTO Upload (otto-upload.ipynb)
 
 ## Cross-validation datasets
-Organizers have published the code they have used to produce the test dataset. It actually cuts all the sessions that started before the test period and continue into test period. Then, it selects sessions that have started during test period and filters out sessions with aids not met in any session before test period (short sessions, of course, are more likely to pass through that filter). After that unfiltered sessions are truncated at a random point, leaving at least one known and at least one unknown event. As an output we have a shortened file of full sessions, a cross-validation file of truncated sessions and a file with labels.
+Organizers have published the code they have used to produce the test dataset. It actually cuts all the sessions that started before the test period and continue into test period. Then, it selects sessions that have started during test period and filters out sessions with aids not met in any session before test period (short sessions, of course, are more likely to pass through that filter).  After that, the unfiltered sessions are truncated at a random point, leaving at least one known and at least one unknown event. As an output we have a shortened file of full sessions, a cross-validation file of truncated sessions and a file with labels.
 
-I used this code to produce 2 different cross-validation datasets with different random seeds. The intension was to check at some point wether results for different cross-validation sets differ and probably to try using features, generated for two datasets to train two models and then take average prediction. When working on the project I have compared several times intermediate results for the two datasets, and there never was a significant difference. I also tried using two models build upon different cross-validation datasets to predict orders, but improved results just a little bit, so working with two cross-validation dataset probably was not worth the effort.
+I used this code to produce 2 different cross-validation datasets with different random seeds. The intention was to check at some point whether results for different cross-validation sets differ and probably to try using features, generated for two datasets to train two models and then take average prediction. While working on the project, I have compared several times intermediate results for the two datasets, and there never was a significant difference. I have also tried using two models build upon different cross-validation datasets to predict orders, but this improved results just a little bit. So, building all the features for both cross-validation datasets probably was not worth the effort.
 
 In the same notebook I also converted all the data, including inputs and cross-validation sets, from json to parquet, changed datatypes from int64 to int32, and mapped event types to integers (0 - clicks, 1 - carts, 2 - orders) to reduce memory usage.
 
-Now with cross-validation datasets ready it is possible to get additional insights on the test dataset and on the answers I am going to predict.
-Number of full sessions in history has reduced to 10.6 mln, and the cross-validation datasets have 1.8 mln truncated sessions. 
-Out of that number only about 300,000 sessions or 17% have at least one aid carted and about half of than number, about 150,000 sessions or 8% have at least one aid ordered. The vast majority of sessions do not have any labels neither for carts nor for orders. This means, cart and order predictions for most short sessions does not matter, as only predictions for sessions with some actual carts or orders give points. At the same time, almost all the sessions do have a single ground truth value for clicks, while very few have no ground truth values.
+With cross-validation datasets ready, it is possible to get additional insights on the test dataset and on the events I am going to predict.
+The number of full sessions in history has reduced to 10.6 mln, and the cross-validation datasets have 1.8 mln truncated sessions. Out of that number only about 300,000 sessions or 17% have at least one aid carted and about half of that number, about 150,000 sessions or 8% have at least one aid ordered. The vast majority of sessions do not have neither cart nor order labels. This means, cart and order predictions for most short sessions do not matter, as only predictions for sessions with some actual carts or orders give points. At the same time, almost all the sessions do have a single ground truth value for clicks, while very few have no ground truth values.
 
 ## Calculations aside of the main pipeline
 These notebooks include notebooks calculating the co-visitaion matrixes, w2vec models and all the other calculations combined into 2 notebooks "create counts for clicks" and "create counts for buys" (buys means any non-click event, i.e. either cart or click). All the calculations in those notebooks are repeated at least twice: once for the cross-validation dataset and then for the full data, in a few cases the calculations need to be made separately for each cross-validation dataset.
@@ -110,6 +109,8 @@ For clicks model I use the lowest number of aids from session history, as the mo
 For cart and order candidates I also take latest aids from session history, first latest buys, then all the latest aids, then add most common aids suggested in the co-visitation matrix for last buys, then add to the list most common aids suggested by the co-visitation matrix for any last aid in the session history. All the constants, like number of buys to take from session history, number of aids from session history, maximum number of aids, suggested from buys e.t.c. vary for carts/orders and depending on number of candidates, but the logic is mostly the same. Then, like when generating candidates for clicks, I remove duplicates from the list and cut it to get the desired number of candidates. If after removing all the duplicates there are less aids in the list then the desired number of candidates, then I one by one add aids from daily top of most popular aids (after checking for each one that it not in the list already). For 20 cart candidates my best result was 40.68% percent guessed, while for 75 candidates it was 47.12%. For orders, best result for 20 candidates was 64.84%, while for 75 candidates it was 68.95%.
 
 We can see, that percent of guessed orders is much higher, than percent of guessed carts. This is mostly because all the carted aids have a very high chance to be ordered, i.e. you make an obvious move - suggest all previously carted aids are going to be ordered, and get a good percent of guessed items. But it is harder to guess carts, as recently viewed aids have a much lower chance to be added to cart.
+
+Note: this code was written for kaggle competition and to produce good competition result I did a few things, that wouldn't make sense in creating a real life recomendation system. When generating candidates, some information from the future is used, as daily top clicks/carts/orders are not known until the day is over. At the beginning of the competition organizers answered questions and explained that it would be ok to use forward-looking features, and I understood that other participants would use such features. So, I've also used some information from the future for generating candidates and for creating features for the re-ranking models.
 
 ## Feature engineering.
 The three feature engineering notebooks take time to run and were the longest notebooks in terms of lines of code. I had to move some calculations to "Calculations for clicks" and "Calculations for buys" notebooks, and also moved definitions of functions, common to several feature engineering notebooks, to a dedicated notebook "OTTO common feature engineering". To further speed up the notebooks, I had to rewrite some code using polars library instead of pandas. All of this made the notebooks managable in terms of run time and complexity.
@@ -210,7 +211,7 @@ Close to competition's final days, I have increased number of candidates for car
 At the end of the competition, best cross-validation recalls were 54.54% for clicks, 42.08% for carts and 65.80% for orders. You can see that even with the re-ranking GBDT models the results were not that much better than results of rules-based candidate generation, adding just about 1-2%.
 
 ## Final formatting and submitting the results
-Little can be said abouth this notebook. I wrote the code in a way that it was possible to upload results for a single model or results for all the three models, to track improvements for each model on leaderboard. In case of uploading results for a single model, slots for other model's results are filled with data from sample submission file, provided by competition organizers.
+Little can be said about this notebook. I wrote the code in a way that it was possible to upload results for a single model or results for all the three models, to track improvements for each model on leaderboard. In case of uploading results for a single model, slots for other model's results are filled with data from sample submission file, provided by competition organizers.
 
 ## Summary and what could have been done better
 I started working on the project about a month after the competition was launched and still managed to get into top 3% participants, well in the middle of the silver zone. That should be considered to be a fairly good result. After the competition, I've read all the posts of top teams members and understood that all of them used servers with way more RAM and GPU available. I worked solo and lost a competition to people who mostly worked in teams and had way more computational resourse. If all the time I spent trying to fit all the data into available memory could be spent on running additional experiments, I would have been be able to produce a better result.
