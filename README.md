@@ -52,7 +52,7 @@ Here is the full list of notebooks, used in the project pipeline:
   * W2vec features for orders (otto-orders-w2vec.ipynb)
   * W2vec features for orders (part_1) (otto-orders-w2vec-part1.ipynb)
 * training and predicting
-  * Clicks Model and Prediction
+  * Clicks Model and Prediction (otto-model-clicks.ipynb)
   * Carts Model
   * Orders Model
   * Carts Prediction
@@ -158,41 +158,43 @@ As many features are common between the notebooks, I will now provide features u
   * **w2v_5_max** - maximal w2vec similarity between candidate and last 5 aids;
   * **w2v_5_min** - minimal w2vec similarity between candidate and last 5 aids (this feature also has low importance, but its removal decreased result a bit).
 
-Avewrage importances per 4 folds of all the features for LGBM models (importance_type='gain').
+Avewrage importances per 4 folds for all the features in LGBM models (importance_type='gain').
 | Feature                | Clicks  | Carts   | Orders  |
 |------------------------|---------|---------|---------|
 | wgt_matrix             | 2.6e+05 | X       | X       |
 | wgt_exp                | 2.4e+06 | X       | X       |
-| n                      | 8.0e+06 | 5.2e+06 |         |
-| time_delta             | 8.8e+04 | 1.8e+05 |         |
-| count_views            | 5.6e+04 | 1.0e+04 |         |
-| ts_diff                | 1.2e+05 | 3.3e+04 |         |
-| time_viewed            | 1.3e+05 | 1.1e+05 |         |
-| daily_aid_count        | 4.1e+04 | 1.5e+04 |         |
-| same_day_aid_count     | 2.3e+05 | 6.5e+04 |         |
-| aid_count_weekly       | 2.5e+04 | 2.0e+04 |         |
+| n                      | 8.0e+06 | 5.2e+06 | 1.7e+06 |
+| time_delta             | 8.8e+04 | 1.8e+05 | 3.5e+06 |
+| count_views            | 5.6e+04 | 1.0e+04 | 1.3e+04 |
+| ts_diff                | 1.2e+05 | 3.3e+04 | 2.0e+04 |
+| time_viewed            | 1.3e+05 | 1.1e+05 | 2.7e+04 |
+| daily_aid_count        | 4.1e+04 | 1.5e+04 | 9.8e+03 |
+| same_day_aid_count     | 2.3e+05 | 6.5e+04 | 2.1e+04 |
+| aid_count_weekly       | 2.5e+04 | 2.0e+04 | 1.6e+04 |
 | wgt_last               | 2.3e+06 | X       | X       |
 | wgt_before_last        | 9.7e+04 | X       | X       |
-| time_viewed_clipped    | 2.9e+04 | 1.5e+04 |         |
-| aid_counts             | 2.2e+05 | 3.3e+04 |         |
-| type_last              | 4.7e+04 | 1.0e+04 |         |
+| time_viewed_clipped    | 2.9e+04 | 1.5e+04 | 1.2e+04 |
+| aid_counts             | 2.2e+05 | 3.3e+04 | 1.9e+04 |
+| type_last              | 4.7e+04 | 1.0e+04 | 5.4e+04 |
 | similarity_first       | 1.6e+05 | X       | X       |
 | similarity_second      | 7.3e+04 | X       | X       |
-| wgt_buy2buy            | X       | 2.6e+04 |         |
-| wgt_c2buy_short        | X       | 1.2e+05 |         |
-| wgt_c2buy_full         | X       | 5.7e+05 |         |
-| wgt_c2buy_6_from_full  | X       | 5.2e+04 |         |
-| conv                   | X       | 1.6e+04 |         |
-| clicks_before_buy      | X       | 5.8e+04 |         |
-| session_time           | X       | 2.8e+04 |         |
-| events_last_3hours     | X       | 1.1e+05 |         |
-| history_mean           | X       | 3.9e+04 |         |
-| total_2cart/order_conv | X       | 2.0e+04 |         |
-| buys_this_session      | X       | 1.6e+04 |         |
-| w2v_20_mean            | X       | 3.0e+04 |         |
-| w2v_20_min             | X       | 1.8e+04 |         |
-| w2v_5_min              | X       | 1.2e+04 |         |
-| w2v_5_max              | X       | 4.6e+05 |         |
+| wgt_buy2buy            | X       | 2.6e+04 | 2.7e+04 |
+| wgt_c2buy_short        | X       | 1.2e+05 | 3.4e+04 |
+| wgt_c2buy_full         | X       | 5.7e+05 | 1.7e+05 |
+| wgt_c2buy_6_from_full  | X       | 5.2e+04 | 3.6e+04 |
+| conv                   | X       | 1.6e+04 | X       |
+| clicks_before_buy      | X       | 5.8e+04 | 2.6e+04 |
+| session_time           | X       | 2.8e+04 | 2.2e+04 |
+| events_last_3hours     | X       | 1.1e+05 | 6.1e+04 |
+| history_mean           | X       | 3.9e+04 | 2.5e+04 |
+| total_2cart/order_conv | X       | 2.0e+04 | 2.4e+05 |
+| buys_this_session      | X       | 1.6e+04 | 1.2e+05 |
+| w2v_20_mean            | X       | 3.0e+04 | 6.9e+04 |
+| w2v_20_min             | X       | 1.8e+04 | 2.7e+04 |
+| w2v_5_min              | X       | 1.2e+04 | 8.6e+03 |
+| w2v_5_max              | X       | 4.6e+05 | 1.8e+05 |
+| aid_counts_buys        | X       | X       | 1.8e+04 |
+| buys_in_session        | X       | X       | 6.6e+04 |
 
 ## Training the GBDT models and predicting
 Notebooks training the GBDT models are the only ones that use GPU. I tried both catboost and LGBM models, and LGBM showed better results. To produce the final prediction for clicks and carts only LGBM predictions are used, while for orders I've build two cross validation datasets and used one of them to train LGBM model, and another one - to train catboost model. Then I combined predictions made by two models, and found out that it mamkes a slightly better prediction than a single prediction made by LGBM model. I kept that pipeline with two models and two cross-validation datasets for orders, but decided against implementing a similar pipeline for carts.
@@ -213,7 +215,7 @@ Little can be said abouth this notebook. I wrote the code in a way that it was p
 ## Summary and what could have been done better
 I started working on the project about a month after the competition was launched and still managed to get into top 3% participants, well in the middle of the silver zone. That should be considered to be a fairly good result. After the competition, I've read all the posts of top teams members and understood that all of them used servers with way more RAM and GPU available. I worked solo and lost a competition to people who mostly worked in teams and had way more computational resourse. If all the time I spent trying to fit all the data into available memory could be spent on running additional experiments, I would have been be able to produce a better result.
 
-Having said that, no doubt that even with the resourse available I could have done better. I had enough memory to add much more features for carts and orders models. I could have run more notebooks in parallel and tried even more features, more types of co-visitation matrixes, more versions of w2vec models. I could have improved my carts and orders models by using some features I've only used for clicks model. For example, I haven't even tried features built for exact last aid in session for carts and orders models, and I haven't tried features built with any of click2click models for carts/orders. Then, there were several bugs in code that also a bit decreased the result. Then, there were all sorts of original co-visitation matrixes used by top teams, like a matrix that only counts first few aids in session, a matrix that counts last week's results, matrixes that separately count events before/after 2 PM. If I had a bit more time to think, probably I could have come to some of this ideas. Probably one of my mistakes was always trying to add additional counts instead of thinking about additional types of co-visitation matrixes.
+After the competition end with all the stories of top teams being published, it is easy to say what can be improved. Top teams used much more features and much more different co-visitation matrixes, including really original ones, like a matrix that only counts first few aids in session, a matrix that counts last week's results, matrixes that separately count events before/after 2 PM. No doubt that even with the resourse available I could have done better. I had enough memory to add much more features for carts and orders models. I could have run more notebooks in parallel and tried even more features, more types of co-visitation matrixes, more versions of w2vec models. I could have improved my carts and orders models by using some features I've only used for clicks model. For example, I haven't even tried features built for exact last aid in session for carts and orders models, and I haven't tried features built with any of click2click models for carts/orders. Then, there were several bugs in code that also a bit decreased the result. But with all these little improvements, I would get a higher position, but wouldn't get to the very top.
 
 ## March 2023 upload to github.
-In March 2023, about a month after the competition, I decided to review the code, add some comments, delete commented unused code and upload the notebooks to github. At this point further improving recommendations was not my goal anymore. But while adding comments and reviewing the code I couldn't help making some changes. I fixed a few bugs, moved addidional fucntions to otto_common notebook, created a separate notebook with functions common to feature engineering, checked for ways to speed up the word2vec feature notebook, removed a few features that actually decreased model's performance, e.t.c. As a result not just the code became shorter and clearer, but also the result have improved.
+In March 2023, about a month after the competition, I decided to review the code, add some comments, delete commented unused code and upload the notebooks to github. At this point further improving the score was not my goal anymore. But while adding comments and reviewing the code I couldn't help making some changes. I fixed a few bugs, moved addidional fucntions to otto_common notebook, created a separate notebook with functions common to feature engineering, checked for ways to speed up the word2vec feature notebook, removed a few features that actually decreased model's performance, e.t.c. As a result not just the code became shorter and clearer, but also the result have improved. After implementing those changes, best cross-validation results improved to 54.71% for clicks, 42.21% for carts and 65.87% for orders.
