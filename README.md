@@ -13,6 +13,9 @@ The solution's pipeline includes the following major stages:
 * some final formatting and submitting the results.
 Generating candidates, engineering features, training models and making final prediction stages have separate notebooks for clicks, carts and orders. For each of these predictions, a dedicated model is being trained, with different features, on a different dataset and for different candidates, although some features are actually common.
 
+![solution's pipeline](https://github.com/Fedorov-Artem/kaggle_OTTO/blob/main/OTTO_schema.png?raw=true)
+
+
 ## A closer look at input data and metric.
 Each session data in the inputs consists of a session ID and sequence of events, each event includes AID, a timestamp, and event type, which could be either click, cart or order. There are total 12.9 mln full sessions, and a median full session has 6 events, while there are 1.7 mln truncated sessions in the test dataset and a median truncated session has just 2 events. More than 90% of all events are clicks, most sessions are short and only include clicks. 
 
