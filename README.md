@@ -12,8 +12,7 @@ The solution's pipeline includes the following major stages:
 * training the GBDT re-ranking models on the cross-validation dataset and using those models to select most relevant candidates, generated for the test sessions;
 * some final formatting and submitting the results.
 Generating candidates, engineering features, training models and making final prediction stages have separate notebooks for clicks, carts and orders. For each of these predictions, a dedicated model is being trained, with different features, on a different dataset and for different candidates, although some features are actually common.
-
-![solution's pipeline](https://github.com/Fedorov-Artem/kaggle_OTTO/blob/main/OTTO_schema.png?raw=true)
+![solution's pipeline](https://raw.githubusercontent.com/Fedorov-Artem/kaggle_OTTO/136617a2eaea74884cc1f1750fdf093d243f3765/OTTO_schema.png)
 
 
 ## A closer look at input data and metric.
